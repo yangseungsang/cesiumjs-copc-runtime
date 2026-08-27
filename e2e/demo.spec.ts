@@ -13,10 +13,10 @@ test("opens the CesiumJS COPC viewer", async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
-test("uses a device budget instead of the old fixed 1.5 M point cap", async ({ page }) => {
+test("starts with a safe point budget and allows explicit detail increases", async ({ page }) => {
   await page.goto("/");
 
-  const pointBudget = await page.locator("#point-budget").inputValue();
-  expect(["1000000", "6000000", "10000000"]).toContain(pointBudget);
-  expect(pointBudget).not.toBe("1500000");
+  const pointBudget = page.locator("#point-budget");
+  await expect(pointBudget).toHaveValue("1500000");
+  await expect(pointBudget).toHaveAttribute("max", "10000000");
 });
