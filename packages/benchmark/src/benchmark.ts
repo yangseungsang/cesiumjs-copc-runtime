@@ -1,35 +1,67 @@
 import { CopcSource, formatNodeId, type HierarchyEntry } from "cesiumjs-copc-core";
 
+/**
+ * Reproducible streaming and decode benchmark for a remote COPC file.
+ *
+ * This measures the network and decode path in Node, deliberately not the renderer.
+ * Excluding WebGL keeps the measurement reproducible within one environment. Results
+ * still depend on CPU, network location, and server behaviour, so they are not
+ * comparable across machines without the controls described in `docs/benchmarks.md`.
+ * Browser measurement follows the separate protocol in that document.
+ */
+
 export interface BenchmarkOptions {
+  /** Stop selecting nodes once this many points are queued. Defaults to 1,000,000. */
   readonly targetPoints?: number;
+  /** Hard cap on selected nodes, so a shallow file cannot pull the entire dataset. */
   readonly maximumNodes?: number;
+  /** Parallel node loads after the first. Defaults to 4, matching the runtime queue. */
   readonly concurrency?: number;
+  /** Dimensions to decode. Widening this raises decode cost, so keep it fixed when comparing runs. */
   readonly dimensions?: readonly string[];
 }
 
 export interface BenchmarkResult {
   readonly url: string;
+  /** Absent when the server does not report `Content-Length`. */
   readonly fileBytes?: number;
+  /** Points in the whole file, from the header. Compare against `decodedPoints`. */
   readonly totalPoints: number;
+  /** Header and VLR read, measured from process start. */
   readonly metadataMilliseconds: number;
+  /** Hierarchy page traversal only, excluding the metadata read. */
   readonly hierarchyMilliseconds: number;
+  /** Wall clock from start until the first node finished decoding. */
   readonly timeToFirstPointMilliseconds: number;
+  /** Covers all node loads including the first, so it overlaps time to first point. */
   readonly decodeMilliseconds: number;
   readonly decodedPoints: number;
   readonly decodedNodes: number;
+  /** Derived from `decodedPoints` and `decodeMilliseconds`, so it includes fetch time. */
   readonly pointsPerSecond: number;
+  /** HTTP requests actually issued, after coalescing. */
   readonly networkRequests: number;
+  /** Ranges the runtime asked for, before coalescing. */
   readonly logicalRangeRequests: number;
+  /** Logical ranges that were merged into a neighbour instead of issued separately. */
   readonly coalescedRangeRequests: number;
   readonly rangeCacheHits: number;
   readonly persistentRangeCacheHits: number;
+  /** Bytes received from the network. The headline number for streaming efficiency. */
   readonly networkBytes: number;
   readonly compressedCacheBytes: number;
   readonly heapUsedBytes: number;
   readonly residentSetBytes: number;
+  /** Deepest octree node reached, which shows how far refinement actually went. */
   readonly deepestNode: string;
 }
 
+/**
+ * Runs one benchmark pass against a remote COPC URL.
+ *
+ * Run this from a cold process. Reusing a process carries DNS, TLS session, and
+ * allocator state across runs and quietly inflates later results.
+ */
 export async function benchmarkCopc(
   url: string,
   options: BenchmarkOptions = {},
@@ -96,6 +128,14 @@ export async function benchmarkCopc(
   }
 }
 
+/**
+ * Selects nodes breadth first, taking the densest children first at each level.
+ *
+ * This deliberately mimics what a camera pulling back to frame the whole dataset
+ * would request, rather than walking one branch to the leaves. A depth-first walk
+ * would report decode throughput for a handful of dense leaf nodes and hide the
+ * hierarchy page fetches that dominate a real first view.
+ */
 async function collectBenchmarkNodes(
   source: CopcSource,
   targetPoints: number,
@@ -115,6 +155,15 @@ async function collectBenchmarkNodes(
   return selected;
 }
 
+/**
+ * Runs `transform` over `values` with a fixed number of in-flight calls, preserving
+ * input order in the result.
+ *
+ * A plain `Promise.all` would open every node request at once and measure how the
+ * server handles a burst rather than how the runtime streams. The worker loop keeps
+ * exactly `concurrency` requests outstanding, which is what the real request queue
+ * does.
+ */
 async function mapConcurrent<T, R>(
   values: readonly T[],
   concurrency: number,

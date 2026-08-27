@@ -6,16 +6,42 @@ import type {
 } from "cesiumjs-copc-core";
 
 export interface SpatialQueryOptions {
+  /** Dimensions to decode. Narrowing this is the cheapest way to speed up a query. */
   readonly dimensions?: readonly string[];
+  /**
+   * Stop descending past this octree depth. Deeper levels subdivide the same extent
+   * into more nodes, so capping depth bounds how many requests a wide box can issue,
+   * at the cost of resolution.
+   */
   readonly maximumDepth?: number;
+  /**
+   * Stop once this many points have been yielded. Guards against a wide box pulling
+   * most of the file.
+   */
   readonly pointLimit?: number;
+  /**
+   * Propagated into `loadNode`, so an abort is observed at the traversal checkpoints
+   * between nodes and at the abort checks the source and decoder perform around
+   * decompression. It does not interrupt a decompression call already in progress.
+   */
   readonly signal?: AbortSignal;
 }
 
 /**
  * Streams points inside an axis-aligned box expressed in the COPC source CRS.
- * Every intersecting hierarchy node is read incrementally; the full file is
- * never downloaded as a prerequisite.
+ *
+ * Bounds are in source CRS units, not degrees or ECEF metres, because the whole point
+ * of running analysis against COPC directly is to stay in the coordinate space the
+ * data was captured in.
+ *
+ * This is a generator rather than a function returning an array so a caller can start
+ * consuming after the first intersecting node instead of waiting for the traversal to
+ * finish. Nodes arrive breadth first, so early results are coarse and later ones
+ * refine them. Code that needs a complete answer must drain the generator.
+ *
+ * Traversal prunes on the hierarchy bounding boxes first and only then decodes and
+ * point-tests the survivors, so a small box costs a small number of range requests
+ * rather than a full download.
  */
 export async function* queryBounds(
   source: PointCloudSource,
@@ -47,6 +73,13 @@ export async function* queryBounds(
   }
 }
 
+/**
+ * Tests whether two axis-aligned boxes overlap, touching faces included.
+ *
+ * Both boxes must be in the same CRS. Comparison is inclusive so a point exactly on a
+ * shared face is not silently dropped by the hierarchy prune before the point test
+ * ever sees it.
+ */
 export function boundsIntersect(left: Bounds3, right: Bounds3): boolean {
   return (
     left[0] <= right[3] &&

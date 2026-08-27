@@ -10,7 +10,20 @@ import {
 import { createCartesianPositions } from "./cartesian.js";
 import type { DecoderWorkerRequest, DecoderWorkerResponse } from "./protocol.js";
 
+/**
+ * Worker entry point for LAZ decoding and point filtering.
+ *
+ * Keeping decode here is what lets the main thread stay responsive while the camera
+ * moves: a node decode is hundreds of milliseconds of tight numeric work that would
+ * otherwise drop frames. The CRS transform runs here too, for the same reason.
+ *
+ * Decoding metadata is module state rather than a per-request field because it is the
+ * same for every node in a file and is large enough that resending it with each
+ * request would dominate the message cost.
+ */
+
 const scope = self as unknown as DedicatedWorkerGlobalScope;
+/** In-flight decodes keyed by request id, so a `cancel` can abort the right one. */
 const controllers = new Map<number, AbortController>();
 let metadata: CopcDecodingMetadata | undefined;
 let cartesianTransform: CartesianTransformDefinition | undefined;
@@ -88,6 +101,17 @@ function respond(response: DecoderWorkerResponse, transfer: Transferable[] = [])
   scope.postMessage(response, transfer);
 }
 
+/**
+ * Collects every buffer in a node so the response transfers instead of copying.
+ *
+ * A decoded node is the largest thing this worker produces, so copying it back would
+ * roughly double both the memory spike and the postMessage cost. After transfer the
+ * worker no longer owns these buffers, which is safe because it drops its reference
+ * to the node in the same turn.
+ *
+ * Views over a `SharedArrayBuffer` are filtered out: they are not transferable, and
+ * passing one would make `postMessage` throw.
+ */
 function transferables(node: PointCloudNode): Transferable[] {
   const buffers = [
     node.positions.buffer,

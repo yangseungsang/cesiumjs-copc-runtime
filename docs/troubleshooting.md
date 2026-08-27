@@ -25,7 +25,31 @@ EGM96 correction only for data known to contain EGM96 orthometric heights.
 
 Build the workspace before starting the source demo. A consuming bundler must serve
 the Worker module and `laz-perf.wasm`. Check Content Security Policy, MIME types, and
-worker URL rewriting. Use `useWorkers: false` only as a diagnostic fallback.
+worker URL rewriting. If `WebAssembly.instantiate()` reports the bytes `3c 21 44 4f`,
+the WASM URL returned HTML (`<!DO`) instead of a WebAssembly binary, usually because
+an absolute asset path ignored the application's deployment base path.
+
+The demo handles Vite deployments by importing the WASM file with `?url` in
+[`apps/demo/src/laz-perf-worker.ts`](../apps/demo/src/laz-perf-worker.ts) and aliasing
+the bare `laz-perf` import to that adapter:
+
+```ts
+import { fileURLToPath } from "node:url";
+
+const lazPerfAdapter = fileURLToPath(new URL("./src/laz-perf-worker.ts", import.meta.url));
+
+export default {
+  resolve: {
+    alias: [{ find: /^laz-perf$/, replacement: lazPerfAdapter }],
+  },
+};
+```
+
+Applications using `cesiumjs-copc` do not inherit the demo's Vite alias. Add
+`laz-perf` as a direct dependency, provide an equivalent adapter for the application's
+bundler, and ensure its emitted URL includes the configured base path. A healthy
+response has status `200`, an `application/wasm` content type, and the first four
+bytes `00 61 73 6d`. Use `useWorkers: false` only as a diagnostic fallback.
 
 ## Memory continues to grow
 

@@ -7,11 +7,12 @@ Cloud-native COPC streaming and analysis for CesiumJS without 3D Tiles preproces
 [![License: MIT](https://img.shields.io/badge/license-MIT-0b7285.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-43853d.svg)](package.json)
 
-[Live demo](https://yangseungsang.github.io/cesiumjs-copc-runtime/) ·
-[한국어](README.ko.md) ·
-[Getting started](docs/getting-started.md) ·
-[Architecture](docs/architecture.md) ·
-[Benchmarks](docs/benchmarks.md) ·
+[Live demo](https://yangseungsang.github.io/cesiumjs-copc-runtime/) |
+[한국어](README.ko.md) |
+[All documentation](docs/README.md) |
+[Getting started](docs/getting-started.md) |
+[Architecture](docs/architecture.md) |
+[Benchmarks](docs/benchmarks.md) |
 [Contributing](CONTRIBUTING.md)
 
 ![A COPC point cloud progressively streamed over a globe](docs/assets/cesiumjs-copc-runtime-hero.png)
@@ -35,6 +36,17 @@ Conventional:  source point cloud → preprocessing → service copy → viewer
 This project:  one COPC file ─────── HTTP byte ranges ────────→ CesiumJS
                                       └───────────────────────→ analysis
 ```
+
+| Axis                            | 3D Tiles pipeline                      | This project |
+| ------------------------------- | -------------------------------------- | ------------ |
+| Work before the first view      | Convert the whole dataset              | None         |
+| Cost when the source changes    | Reconvert the affected dataset         | None         |
+| What the per-view cost scales with | The view, after conversion          | The view     |
+
+[Pipeline comparison](docs/pipeline-comparison.md) works through each axis, separates
+what this repository measured from what follows structurally, and is explicit that no
+row measures an actual 3D Tiles conversion. It also lists the cases where converting
+to 3D Tiles is still the better choice.
 
 ## Evidence at a glance
 
@@ -92,9 +104,28 @@ and analysis can evolve independently. See [Architecture](docs/architecture.md) 
 | `cesiumjs-copc-analysis`  | Bounds queries, statistics, and height profiles              |
 | `cesiumjs-copc-benchmark` | Reproducible remote streaming and decode benchmark           |
 
-## Quick start from source
+## Install
 
 Node.js 20 or newer is required.
+
+```sh
+npm install cesiumjs-copc cesium
+```
+
+CesiumJS is a peer dependency, so install it yourself and keep exactly one copy in
+your tree. The renderer hands Cesium objects back and forth with your viewer, and two
+Cesium instances break the type identity those exchanges rely on.
+
+Install only what you use. The packages are independent:
+
+```sh
+npm install cesiumjs-copc-core       # read COPC over HTTP ranges, no renderer
+npm install cesiumjs-copc-analysis   # spatial queries and statistics, no renderer
+```
+
+Neither of those needs Cesium.
+
+## Run the demo from source
 
 ```sh
 git clone https://github.com/yangseungsang/cesiumjs-copc-runtime.git

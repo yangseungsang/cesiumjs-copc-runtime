@@ -3,7 +3,6 @@ import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const cesiumSource = "../../node_modules/cesium/Build/Cesium";
-const lazPerfWasm = "../../node_modules/laz-perf/lib/worker/laz-perf.wasm";
 const lazPerfWorkerAdapter = fileURLToPath(new URL("./src/laz-perf-worker.ts", import.meta.url));
 const base = process.env.BASE_URL ?? "/";
 
@@ -14,12 +13,10 @@ export default defineConfig({
   },
   plugins: [
     viteStaticCopy({
-      targets: ["Workers", "ThirdParty", "Assets", "Widgets"]
-        .map((name) => ({
-          src: `${cesiumSource}/${name}`,
-          dest: "cesium",
-        }))
-        .concat([{ src: lazPerfWasm, dest: "." }]),
+      targets: ["Workers", "ThirdParty", "Assets", "Widgets"].map((name) => ({
+        src: `${cesiumSource}/${name}`,
+        dest: "cesium",
+      })),
     }),
   ],
   resolve: {

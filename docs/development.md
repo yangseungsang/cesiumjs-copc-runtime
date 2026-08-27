@@ -18,6 +18,10 @@ and declaration files from `dist/`.
 
 ## Quality commands
 
+`.nvmrc` pins the Node version CI uses for coverage, packaging, and the demo build.
+Run `nvm use` (or the equivalent for your version manager) before the commands below
+so local results match CI.
+
 ```sh
 npm ci
 npm run lint
@@ -39,6 +43,16 @@ npm run test:e2e
 
 Coverage thresholds are a regression floor, not a completion target. New behavior
 should include focused tests, especially error paths and boundary conditions.
+
+Coverage measures the published runtime packages. The benchmark CLI is a private
+development tool and type-only modules compile to nothing, so both are excluded
+rather than counted as permanently uncovered.
+
+Tests that need Cesium or COPC infrastructure stub the smallest possible surface.
+`copc-point-cloud.test.ts` replaces only `PrimitiveCollection` so the frame loop runs
+without a WebGL context, and keeps the real math and point-collection classes.
+`copc-source.test.ts` and `decoder.test.ts` stub the `copc` package. No test reaches
+the network.
 
 ## Pull requests
 
