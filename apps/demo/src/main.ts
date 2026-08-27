@@ -119,6 +119,10 @@ let cameraMoving = false;
 let cameraFocusNeedsDepthUpdate = true;
 let previousLoadingNodes = 0;
 let panelOpen = false;
+let sheetDragPointerId: number | undefined;
+let sheetDragStartY = 0;
+let sheetDragOffset = 0;
+let sheetDragged = false;
 const screenCenter = new Cartesian2();
 const pickedCenter = new Cartesian3();
 const pivotTransform = new Matrix4();
@@ -131,8 +135,46 @@ syncSheetMode();
 new ResizeObserver(updateSheetPeek).observe(panelHeader);
 sheetQuery.addEventListener("change", syncSheetMode);
 
-panelToggle.addEventListener("click", () => setPanelOpen(!panelOpen));
+panelToggle.addEventListener("click", () => {
+  // 드래그로 끝난 제스처는 endSheetDrag 가 이미 상태를 정했다.
+  if (sheetDragged) {
+    sheetDragged = false;
+    return;
+  }
+  setPanelOpen(!panelOpen);
+});
 panelScrim.addEventListener("click", () => setPanelOpen(false));
+
+panelToggle.addEventListener("pointerdown", (event) => {
+  if (!sheetQuery.matches || event.button !== 0) return;
+  sheetDragPointerId = event.pointerId;
+  sheetDragStartY = event.clientY;
+  sheetDragged = false;
+  panelToggle.setPointerCapture(event.pointerId);
+});
+
+panelToggle.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== sheetDragPointerId) return;
+  const delta = event.clientY - sheetDragStartY;
+  // 짧게 흔들린 것은 탭으로 본다.
+  if (!sheetDragged && Math.abs(delta) <= 4) return;
+  sheetDragged = true;
+  const collapsed = collapsedSheetOffset();
+  sheetDragOffset = Math.min(Math.max((panelOpen ? 0 : collapsed) + delta, 0), collapsed);
+  document.body.classList.add("panel-dragging");
+  panel.style.transform = `translateY(${sheetDragOffset}px)`;
+});
+
+for (const eventName of ["pointerup", "pointercancel"] as const) {
+  panelToggle.addEventListener(eventName, (event) => {
+    if (event.pointerId !== sheetDragPointerId) return;
+    sheetDragPointerId = undefined;
+    if (!sheetDragged) return;
+    document.body.classList.remove("panel-dragging");
+    panel.style.transform = "";
+    setPanelOpen(sheetDragOffset < collapsedSheetOffset() * 0.5);
+  });
+}
 
 viewer.scene.canvas.addEventListener("pointermove", scheduleDetailFocus);
 viewer.scene.canvas.addEventListener("pointerleave", resetDetailFocus);
@@ -401,6 +443,11 @@ function syncSheetMode(): void {
   if (!sheet) setPanelOpen(false);
   else syncPanelInert();
   updateSheetPeek();
+}
+
+function collapsedSheetOffset(): number {
+  // 접힌 시트가 아래로 내려가 있는 거리. 드래그 진행률의 기준이 된다.
+  return Math.max(panel.offsetHeight - panelHeader.offsetHeight, 0);
 }
 
 function updateSheetPeek(): void {
