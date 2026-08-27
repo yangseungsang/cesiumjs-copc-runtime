@@ -11,8 +11,7 @@
   "dependencies": {
     "cesium": "^1.144.0",
     "cesiumjs-copc": "0.1.1",
-    "cesiumjs-copc-core": "0.1.0",
-    "cesiumjs-copc-runtime": "0.1.0"
+    "cesiumjs-copc-core": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.17.2",

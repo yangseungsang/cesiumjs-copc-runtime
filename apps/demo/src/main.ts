@@ -18,7 +18,6 @@ import {
 } from "cesium";
 import { CopcEyeDomeLighting, CopcPointCloud, type CopcColorMode } from "cesiumjs-copc";
 import { IndexedDbRangeCache } from "cesiumjs-copc-core";
-import { budgetFor, classifyDevice } from "cesiumjs-copc-runtime";
 import "./style.css";
 
 const sampleUrl = "https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz";
@@ -96,21 +95,6 @@ const cameraAngleSlot = element<HTMLElement>("camera-angle-slot");
 // 좁은 화면에서 패널이 bottom sheet 로 바뀌는 조건. style.css 의 시트 미디어 쿼리와 같아야 한다.
 const sheetQuery = window.matchMedia("(max-width: 640px), (max-height: 520px)");
 urlInput.value = sampleUrl;
-const initialDeviceTier = classifyDevice();
-const initialDeviceBudget = budgetFor(initialDeviceTier);
-// The library budgets are conservative defaults for embedded viewers. The demo is a
-// detail explorer, so desktop tiers get enough headroom for zooming to request deeper
-// COPC nodes while mobile devices retain the low-tier safety limit.
-const initialPointBudget =
-  initialDeviceTier === "low"
-    ? initialDeviceBudget.pointBudget
-    : Math.min(initialDeviceBudget.pointBudget * 3, Number(pointBudget.max));
-pointBudget.value = String(initialPointBudget);
-pointBudgetValue.textContent = `${(initialPointBudget / 1_000_000).toFixed(2)} M`;
-sse.value = String(initialDeviceBudget.maximumScreenSpaceError);
-sseValue.textContent = `${initialDeviceBudget.maximumScreenSpaceError.toFixed(
-  initialDeviceBudget.maximumScreenSpaceError % 1 === 0 ? 0 : 2,
-)} SSE`;
 
 let layer: CopcPointCloud | undefined;
 let loadStarted = 0;
