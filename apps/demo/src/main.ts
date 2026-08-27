@@ -84,6 +84,16 @@ const cameraFocusLabel = element<HTMLElement>("camera-focus-label");
 const detailFocus = element<HTMLElement>("detail-focus");
 const streamingStatus = element<HTMLElement>("streaming-status");
 const streamingStatusText = element<HTMLElement>("streaming-status-text");
+const panel = element<HTMLElement>("controls-panel");
+const panelHeader = panel.querySelector("header")!;
+const panelBody = element<HTMLElement>("panel-body");
+const panelToggle = element<HTMLButtonElement>("panel-toggle");
+const panelScrim = element<HTMLElement>("panel-scrim");
+const cameraTools = document.querySelector<HTMLElement>(".camera-tools")!;
+const cameraAnglePanel = document.querySelector<HTMLElement>(".camera-angle-panel")!;
+const cameraAngleSlot = element<HTMLElement>("camera-angle-slot");
+// 좁은 화면에서 패널이 bottom sheet 로 바뀌는 조건. style.css 의 시트 미디어 쿼리와 같아야 한다.
+const sheetQuery = window.matchMedia("(max-width: 640px), (max-height: 520px)");
 urlInput.value = sampleUrl;
 
 let layer: CopcPointCloud | undefined;
@@ -108,6 +118,7 @@ let streamingHideTimer: ReturnType<typeof setTimeout> | undefined;
 let cameraMoving = false;
 let cameraFocusNeedsDepthUpdate = true;
 let previousLoadingNodes = 0;
+let panelOpen = false;
 const screenCenter = new Cartesian2();
 const pickedCenter = new Cartesian3();
 const pivotTransform = new Matrix4();
@@ -116,6 +127,12 @@ const cameraOffset = new Cartesian3();
 const localCameraOffset = new Cartesian3();
 
 setBaseMap(baseMap.value);
+syncSheetMode();
+new ResizeObserver(updateSheetPeek).observe(panelHeader);
+sheetQuery.addEventListener("change", syncSheetMode);
+
+panelToggle.addEventListener("click", () => setPanelOpen(!panelOpen));
+panelScrim.addEventListener("click", () => setPanelOpen(false));
 
 viewer.scene.canvas.addEventListener("pointermove", scheduleDetailFocus);
 viewer.scene.canvas.addEventListener("pointerleave", resetDetailFocus);
@@ -136,6 +153,11 @@ viewer.camera.moveEnd.addEventListener(() => {
 });
 
 window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && panelOpen) {
+    setPanelOpen(false);
+    panelToggle.focus();
+    return;
+  }
   if (event.code !== "Space" || event.repeat || isEditableTarget(event.target)) return;
   event.preventDefault();
   setSpaceCameraActive(true);
@@ -357,6 +379,36 @@ viewer.screenSpaceEventHandler.setInputAction(
   }) as ScreenSpaceEventHandler.PositionedEventCallback,
   ScreenSpaceEventType.LEFT_CLICK,
 );
+
+function setPanelOpen(open: boolean): void {
+  panelOpen = open;
+  document.body.classList.toggle("panel-open", open);
+  panelToggle.setAttribute("aria-expanded", String(open));
+  panelToggle.setAttribute("aria-label", open ? "컨트롤 패널 닫기" : "컨트롤 패널 열기");
+  syncPanelInert();
+}
+
+function syncPanelInert(): void {
+  // 접힌 시트의 본문은 화면 밖에 있으므로 탭 순서와 접근성 트리에서 뺀다.
+  panelBody.inert = sheetQuery.matches && !panelOpen;
+}
+
+function syncSheetMode(): void {
+  const sheet = sheetQuery.matches;
+  // 시트에서는 떠 있는 카메라 카드를 쓸 수 없으므로 각도 슬라이더를 시트 안으로 옮긴다.
+  const host = sheet ? cameraAngleSlot : cameraTools;
+  if (cameraAnglePanel.parentElement !== host) host.append(cameraAnglePanel);
+  if (!sheet) setPanelOpen(false);
+  else syncPanelInert();
+  updateSheetPeek();
+}
+
+function updateSheetPeek(): void {
+  if (!sheetQuery.matches) return;
+  // 접힌 시트가 남겨 둘 높이는 헤더 높이와 같다. 제목 줄바꿈에 따라 달라지므로 측정한다.
+  const peek = Math.round(panelHeader.getBoundingClientRect().height);
+  document.documentElement.style.setProperty("--sheet-peek", `${peek}px`);
+}
 
 function setBaseMap(value: string): void {
   viewer.imageryLayers.removeAll();
