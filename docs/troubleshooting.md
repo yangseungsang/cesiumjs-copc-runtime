@@ -27,6 +27,19 @@ Build the workspace before starting the source demo. A consuming bundler must se
 the Worker module and `laz-perf.wasm`. Check Content Security Policy, MIME types, and
 worker URL rewriting. Use `useWorkers: false` only as a diagnostic fallback.
 
+## LAZ decode aborts on the WebAssembly magic word
+
+```text
+Aborted(CompileError: WebAssembly.instantiate(): expected magic word 00 61 73 6d, found 3c 21 44 4f @+0)
+```
+
+`3c 21 44 4f` is `<!DO`, so the server answered the WASM request with an HTML document,
+usually a 404 page or an SPA fallback. Open the Network tab and compare the requested
+`laz-perf.wasm` URL with the path the app is served from. A root-absolute URL under a
+subpath deployment is the usual cause. See
+[Serve the laz-perf WASM](getting-started.md#serve-the-laz-perf-wasm) for the bundler
+configuration that keeps the URL aligned with the deployment base.
+
 ## Memory continues to grow
 
 Check point budget, compressed cache, decoded cache, persistent cache, and selected

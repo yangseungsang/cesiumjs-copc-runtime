@@ -25,6 +25,36 @@ URL and select **Load** to inspect it. The diagnostics panel reports visible poi
 node counts, network bytes, physical and logical ranges, cache hits, decode/build
 time, FPS, and time to first point.
 
+## Serve the laz-perf WASM
+
+LAZ chunks are decoded by `laz-perf`, which fetches `laz-perf.wasm` at runtime. The
+decoder runs inside the decode Worker and on the main thread when Workers are
+unavailable, so the URL has to resolve in both contexts. Let the bundler own that URL
+rather than hardcoding one. A root-absolute literal such as `/laz-perf.wasm` ignores
+the deployment base and requests the domain root, which returns the 404 page of any
+app served from a subpath.
+
+With Vite, import the asset and hand it to `locateFile`:
+
+```ts
+import { createLazPerf } from "laz-perf/lib/web/index.js";
+import lazPerfWasmUrl from "laz-perf/lib/worker/laz-perf.wasm?url";
+
+const lazPerf = await createLazPerf({
+  locateFile: (path: string, prefix: string) =>
+    path.endsWith(".wasm") ? lazPerfWasmUrl : `${prefix}${path}`,
+});
+```
+
+`?url` makes Vite emit the file and rewrite the URL with the configured `base`, so the
+same source works when the app is served from `/` and from `/my-app/`. Webpack and
+Rollup reach the same result through asset modules and
+`new URL("laz-perf/lib/worker/laz-perf.wasm", import.meta.url)`.
+`apps/demo/src/laz-perf-worker.ts` is a working example.
+
+When the WASM is copied into the output directory by hand instead, prefix the URL with
+the deployment base at runtime, for example `` `${import.meta.env.BASE_URL}laz-perf.wasm` ``.
+
 ## Validate a source
 
 Call `CopcPointCloud.validateUrl(url)` before creating a layer. Validation checks:
