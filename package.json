@@ -20,9 +20,9 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "tsc -b --clean",
-    "lint": "eslint apps packages --max-warnings 0",
-    "format": "prettier --write \"{apps,packages}/**/*.{ts,css,html,json}\" \"*.{json,js}\"",
-    "format:check": "prettier --check \"{apps,packages}/**/*.{ts,css,html,json}\" \"*.{json,js}\"",
+    "lint": "eslint apps packages scripts --max-warnings 0",
+    "format": "prettier --write \"{apps,packages}/**/*.{ts,css,html,json}\" \"scripts/**/*.{js,mjs}\" \"README*.md\" \"*.{json,js}\"",
+    "format:check": "prettier --check \"{apps,packages}/**/*.{ts,css,html,json}\" \"scripts/**/*.{js,mjs}\" \"README*.md\" \"*.{json,js}\"",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
