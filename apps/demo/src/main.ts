@@ -399,6 +399,8 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target instanceof HTMLInputElement ||
     target instanceof HTMLSelectElement ||
     target instanceof HTMLTextAreaElement ||
+    // 버튼은 Space 로 눌러야 하므로 카메라 조작에 키를 뺏기면 안 된다.
+    target instanceof HTMLButtonElement ||
     (target instanceof HTMLElement && target.isContentEditable)
   );
 }
