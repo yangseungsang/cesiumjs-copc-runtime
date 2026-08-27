@@ -26,13 +26,26 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary", "lcov"],
+      // Coverage measures the published runtime. The benchmark CLI is a private
+      // development tool, and type-only modules compile to nothing, so both would
+      // report zero without any behavior to test.
       include: ["packages/*/src/**/*.ts"],
-      exclude: ["**/*.test.ts", "**/index.ts", "**/decoder-worker.ts"],
+      exclude: [
+        "**/*.test.ts",
+        "**/index.ts",
+        "**/decoder-worker.ts",
+        "packages/benchmark/**",
+        "packages/copc-core/src/types.ts",
+        "packages/copc-worker/src/protocol.ts",
+      ],
+      // A regression floor, not a completion target. The margin below the current
+      // numbers absorbs the small drift in v8 function counting between Node
+      // releases, so a contributor on a newer Node does not see a phantom failure.
       thresholds: {
-        statements: 45,
-        branches: 65,
-        functions: 75,
-        lines: 45,
+        statements: 88,
+        branches: 74,
+        functions: 85,
+        lines: 88,
       },
     },
   },

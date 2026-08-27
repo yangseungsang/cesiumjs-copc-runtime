@@ -11,6 +11,7 @@ no preprocessing step, no second copy of your data.
 
 **[Live demo](https://yangseungsang.github.io/cesiumjs-copc-runtime/)** |
 [한국어](README.ko.md) |
+[All documentation](docs/README.md) |
 [Getting started](docs/getting-started.md) |
 [API reference](docs/api-reference.md) |
 [Architecture](docs/architecture.md) |
@@ -43,6 +44,11 @@ This project:  one COPC file  ------- HTTP byte ranges ------>  CesiumJS
                                   \-----------------------> streaming analysis
 ```
 
+For a careful comparison with conversion-based delivery, see
+[Pipeline comparison](docs/pipeline-comparison.md). It separates measured results from
+structural differences, states that this repository has not measured an actual 3D
+Tiles conversion, and lists cases where conversion is still the better choice.
+
 ## What it looks like
 
 Colour every point by its LAS attributes at runtime. Switching modes re-colours the
@@ -67,11 +73,13 @@ than assumed.
 ## Install
 
 ```sh
-npm install cesiumjs-copc
+npm install cesiumjs-copc cesium
 ```
 
-CesiumJS comes along as a dependency. Add the analysis package only if you need
-spatial queries, statistics, or height profiles:
+CesiumJS is a peer dependency. Install it explicitly and keep one copy in the
+dependency tree because the runtime exchanges Cesium objects with the host viewer.
+Add the analysis package only if you need spatial queries, statistics, or height
+profiles:
 
 ```sh
 npm install cesiumjs-copc-analysis
@@ -210,7 +218,8 @@ from this demo by `node scripts/capture-screenshots.mjs`.
 | [`cesiumjs-copc-analysis`](packages/copc-analysis) | Bounds queries, statistics, and height profiles              |
 | [`cesiumjs-copc-benchmark`](packages/benchmark)    | Reproducible remote streaming and decode benchmark           |
 
-Most applications only need `cesiumjs-copc`, which pulls in the rest.
+Most rendering applications only need `cesiumjs-copc`, which pulls in the rendering
+stack. The analysis package remains optional.
 
 ## Architecture
 
@@ -232,10 +241,10 @@ they can evolve independently. See [Architecture](docs/architecture.md) and
 
 | Evidence                                 |                                       Current result |
 | ---------------------------------------- | ---------------------------------------------------: |
-| Automated unit tests                     |                             58 tests across 15 files |
-| Coverage baseline                        | 50.95% statements, 74.01% branches, 81.04% functions |
+| Automated unit tests                     |                            120 tests across 19 files |
+| Runtime coverage                         | 92.85% statements, 78.49% branches, 89.22% functions |
 | Supported CI runtimes                    |                                    Node.js 20 and 22 |
-| Browser verification                     |                           Chromium viewer smoke test |
+| Browser verification                     |                      8 Chromium end-to-end scenarios |
 | Reference COPC                           |                         10,653,336 points / 77.4 MiB |
 | Bytes transferred for the benchmark view |                                        about 3.0 MiB |
 | Points decoded                           |                        269,241 across 8 octree nodes |
@@ -246,7 +255,7 @@ These are observations from one machine, not portable performance claims. Read
 environment.
 
 Every pull request runs formatting, lint, the unit tests, coverage thresholds,
-TypeScript checks, all workspace builds, package dry-runs, and a Chromium smoke test:
+TypeScript checks, all workspace builds, package dry-runs, and Chromium end-to-end tests:
 
 ```sh
 npm run lint
@@ -261,7 +270,7 @@ npm run test:e2e
 
 ## Project status
 
-A working `0.1.0` MVP. Known limitations:
+A working `0.1.1` release. Known limitations:
 
 - Cesium's buffer point API is still experimental
 - colour and filter updates are applied CPU-side at runtime

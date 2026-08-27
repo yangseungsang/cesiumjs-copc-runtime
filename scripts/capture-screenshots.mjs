@@ -39,7 +39,9 @@ async function settle(page, { minimumPoints = 1, timeout = 90_000, tolerance = 0
     await page.waitForTimeout(500);
     // textContent, not innerText: the panel is hidden for the scene captures
     // and innerText reports nothing for invisible elements.
-    const parsed = Number((await page.locator("#visible-points").textContent()).replaceAll(",", ""));
+    const parsed = Number(
+      (await page.locator("#visible-points").textContent()).replaceAll(",", ""),
+    );
     const loading = !(await page.locator("#streaming-status").isHidden());
     if (!Number.isFinite(parsed) || parsed < minimumPoints || loading) {
       stableChecks = 0;

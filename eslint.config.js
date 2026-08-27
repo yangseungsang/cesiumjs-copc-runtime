@@ -16,6 +16,19 @@ export default tseslint.config(
     },
   },
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        document: "readonly",
+        Event: "readonly",
+        HTMLElement: "readonly",
+        HTMLSelectElement: "readonly",
+        process: "readonly",
+      },
+    },
+  },
+  {
     files: ["packages/cesium-copc/src/epsg-definitions.ts"],
     rules: {
       "no-loss-of-precision": "off",

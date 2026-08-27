@@ -11,6 +11,7 @@
 
 **[라이브 데모](https://yangseungsang.github.io/cesiumjs-copc-runtime/)** |
 [English](README.md) |
+[문서 전체](docs/README.md) |
 [시작하기](docs/getting-started.md) |
 [API 레퍼런스](docs/api-reference.md) |
 [아키텍처](docs/architecture.md) |
@@ -43,6 +44,10 @@ COPC는 이미 LAZ 포인트를 Range-addressable Octree로 저장하므로, 브
                                  \-----------------------> 스트리밍 분석
 ```
 
+변환 기반 전달 방식과의 신중한 비교는 [파이프라인 비교](docs/pipeline-comparison.md)에
+정리했습니다. 저장소에서 측정한 결과와 구조적 차이를 구분하고, 실제 3D Tiles 변환을
+측정하지 않았다는 점과 변환 방식이 더 적합한 경우를 함께 명시합니다.
+
 ## 화면으로 보기
 
 모든 포인트를 LAS attribute 기준으로 런타임에 색칠합니다. 모드를 바꿔도 이미 메모리에
@@ -67,11 +72,12 @@ Classification 필터로 원하는 면만 남길 수 있습니다. 필터는 디
 ## 설치
 
 ```sh
-npm install cesiumjs-copc
+npm install cesiumjs-copc cesium
 ```
 
-CesiumJS는 의존성으로 함께 설치됩니다. 공간 질의, 통계, 높이 프로파일이 필요할 때만
-분석 패키지를 추가하세요.
+CesiumJS는 peer dependency입니다. 런타임이 호스트 뷰어와 Cesium 객체를 주고받으므로
+직접 설치하고 의존성 트리에 한 벌만 유지해야 합니다. 공간 질의, 통계, 높이
+프로파일이 필요할 때만 분석 패키지를 추가하세요.
 
 ```sh
 npm install cesiumjs-copc-analysis
@@ -209,7 +215,8 @@ CORS 허용 COPC URL이면 무엇이든 넣을 수 있습니다. 위 스크린�
 | [`cesiumjs-copc-analysis`](packages/copc-analysis) | 영역 질의, 통계, 높이 프로파일                          |
 | [`cesiumjs-copc-benchmark`](packages/benchmark)    | 재현 가능한 원격 스트리밍과 디코딩 벤치마크             |
 
-대부분의 애플리케이션은 나머지를 함께 끌어오는 `cesiumjs-copc` 하나면 충분합니다.
+대부분의 렌더링 애플리케이션은 렌더링 스택을 함께 끌어오는 `cesiumjs-copc` 하나면
+충분합니다. 분석 패키지는 선택 사항입니다.
 
 ## 아키텍처
 
@@ -231,10 +238,10 @@ flowchart LR
 
 | 항목                 |                                                 결과 |
 | -------------------- | ---------------------------------------------------: |
-| Unit Test            |                               15개 파일, 58개 테스트 |
-| 커버리지 기준선      | statements 50.95%, branches 74.01%, functions 81.04% |
+| Unit Test            |                              19개 파일, 120개 테스트 |
+| 런타임 커버리지      | statements 92.85%, branches 78.49%, functions 89.22% |
 | CI 런타임            |                                       Node.js 20, 22 |
-| 브라우저 검증        |                                  Chromium smoke test |
+| 브라우저 검증        |                            Chromium E2E 시나리오 8개 |
 | 기준 데이터          |                         10,653,336 points / 77.4 MiB |
 | 기준 View 전송량     |                                           약 3.0 MiB |
 | 디코딩한 포인트      |                        octree node 8개에서 269,241개 |
@@ -244,7 +251,7 @@ flowchart LR
 환경과 비교하기 전에 [측정 방법](docs/benchmarks.md)을 먼저 확인하세요.
 
 모든 Pull Request는 포매팅, 린트, 단위 테스트, 커버리지 기준, 타입 검사, 전체
-워크스페이스 빌드, 패키지 dry run, Chromium smoke test를 통과해야 합니다.
+워크스페이스 빌드, 패키지 dry run, Chromium E2E 테스트를 통과해야 합니다.
 
 ```sh
 npm run lint
@@ -259,7 +266,7 @@ npm run test:e2e
 
 ## 프로젝트 상태
 
-동작하는 `0.1.0` MVP 단계입니다. 알려진 한계는 다음과 같습니다.
+동작하는 `0.1.1` 릴리스입니다. 알려진 한계는 다음과 같습니다.
 
 - Cesium의 buffer point API가 아직 실험 단계입니다
 - 색상과 필터 갱신이 런타임에 CPU에서 처리됩니다

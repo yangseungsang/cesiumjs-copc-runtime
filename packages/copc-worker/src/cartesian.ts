@@ -5,11 +5,35 @@ import type {
 } from "cesiumjs-copc-core";
 import proj4 from "proj4";
 
+/** WGS 84 semi-major axis in metres. */
 const WGS84_A = 6_378_137;
+/** WGS 84 first eccentricity squared. */
 const WGS84_E2 = 6.69437999014e-3;
 const RADIANS = Math.PI / 180;
 
-/** Projects source positions and packs them relative to a stable ECEF origin. */
+/**
+ * Projects source positions into ECEF and packs them relative to a per-node origin.
+ *
+ * The origin exists to make `Float32` viable. Absolute ECEF coordinates are around
+ * 6.4e6 metres, where a `Float32` step is roughly half a metre, so uploading absolute
+ * positions to the GPU would visibly quantize the cloud. Subtracting a node-local
+ * origin first brings the values down to the half-extent of the node, so the
+ * remaining `Float32` step scales with node size rather than with earth radius. For a
+ * node spanning tens of metres that step is well below a millimetre; a node spanning
+ * kilometres is correspondingly coarser. The renderer adds `origin` back through the
+ * model matrix.
+ *
+ * The origin is the centre of the node bounding box rather than its first point,
+ * because a corner origin would leave one side of a large node near the precision
+ * limit while the opposite side sat at zero.
+ *
+ * Positions are accumulated in a `Float64Array` first. Computing the bounding box
+ * requires a full pass anyway, and rounding before the origin is known would bake in
+ * the very error this function avoids.
+ *
+ * @throws If the transform requests geoid correction. That path needs a geoid grid
+ * the worker does not carry, so the main thread handles it instead.
+ */
 export function createCartesianPositions(
   node: PointCloudNode,
   definition: CartesianTransformDefinition,
@@ -58,6 +82,17 @@ export function createCartesianPositions(
   return { origin, positions };
 }
 
+/**
+ * Converts geodetic coordinates to earth-centred earth-fixed metres on the WGS 84
+ * ellipsoid.
+ *
+ * Inlined rather than taken from Cesium so that this package stays usable in a plain
+ * worker without pulling the viewer in as a dependency.
+ *
+ * @param longitude Degrees east.
+ * @param latitude Degrees north.
+ * @param height Metres above the ellipsoid, not above the geoid.
+ */
 function geodeticToEcef(
   longitude: number,
   latitude: number,

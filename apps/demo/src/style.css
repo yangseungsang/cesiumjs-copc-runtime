@@ -274,7 +274,7 @@ body.space-camera .camera-help {
   position: fixed;
   top: 24px;
   left: 24px;
-  z-index: 2;
+  z-index: 3;
   width: min(430px, calc(100vw - 48px));
   max-height: calc(100dvh - 48px);
   padding: 26px;
@@ -288,6 +288,20 @@ body.space-camera .camera-help {
   overscroll-behavior: contain;
   scrollbar-color: rgba(104, 244, 196, 0.38) transparent;
   scrollbar-width: thin;
+}
+
+/* 넓은 화면에서는 패널이 항상 펼쳐져 있으므로 시트 관련 요소를 감춘다. */
+.panel-toggle,
+.panel-scrim {
+  display: none;
+}
+
+/* 좁은 화면에서만 .camera-angle-panel 을 옮겨 받는 자리다. */
+.camera-angle-slot {
+  grid-column: 1 / -1;
+}
+.camera-angle-slot:empty {
+  display: none;
 }
 
 .panel::-webkit-scrollbar {
@@ -500,49 +514,7 @@ body.space-camera #cesium canvas {
   text-overflow: ellipsis;
 }
 
-@media (max-width: 600px) {
-  .panel {
-    top: 12px;
-    left: 12px;
-    width: calc(100vw - 24px);
-    max-height: calc(100dvh - 24px);
-    padding: 18px;
-  }
-  .panel header p {
-    display: none;
-  }
-  h1 {
-    margin-bottom: 18px;
-    font-size: 28px;
-  }
-  .controls {
-    margin: 16px 0;
-  }
-  .controls {
-    grid-template-columns: 1fr 1fr;
-  }
-  .performance-controls {
-    grid-template-columns: 1fr;
-  }
-  .camera-tools {
-    top: auto;
-    right: 12px;
-    bottom: 52px;
-    width: min(236px, calc(100vw - 24px));
-  }
-  .camera-help {
-    display: none;
-  }
-  .camera-angle-panel {
-    margin-top: 0;
-  }
-  #streaming-status {
-    right: 12px;
-    bottom: 12px;
-  }
-}
-
-@media (max-height: 820px) and (min-width: 601px) {
+@media (max-height: 820px) and (min-width: 641px) and (min-height: 521px) {
   .panel {
     top: 12px;
     left: 12px;
@@ -568,7 +540,7 @@ body.space-camera #cesium canvas {
   }
 }
 
-@media (max-height: 560px) and (min-width: 601px) {
+@media (max-height: 560px) and (min-width: 641px) and (min-height: 521px) {
   .camera-tools {
     top: 10px;
     right: 10px;
@@ -576,5 +548,190 @@ body.space-camera #cesium canvas {
   .camera-angle-panel {
     gap: 8px;
     padding-block: 10px;
+  }
+}
+
+/* 좁거나 낮은 뷰포트에서는 패널을 bottom sheet 로 바꾼다. 접힌 상태에서는 헤더만
+   남기고 나머지는 화면 아래로 내려 3D 뷰를 가리지 않는다.
+   이 미디어 쿼리 조건은 main.ts 의 sheetQuery 와 같아야 한다. */
+@media (max-width: 640px), (max-height: 520px) {
+  .panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: min(86dvh, 720px);
+    max-height: none;
+    padding: 0;
+    border-width: 1px 0 0;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    /* --sheet-peek 은 헤더 높이로, main.ts 가 측정해 채운다. */
+    transform: translateY(calc(100% - var(--sheet-peek, 92px)));
+    transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  body.panel-open .panel {
+    transform: translateY(0);
+  }
+
+  /* 드래그 중에는 손가락을 그대로 따라가야 하므로 전환을 끈다. */
+  body.panel-dragging .panel {
+    transition: none;
+  }
+
+  .panel-scrim {
+    position: fixed;
+    display: block;
+    inset: 0;
+    z-index: 2;
+    background: rgba(4, 10, 9, 0.52);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+  }
+
+  body.panel-open .panel-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .panel > header {
+    position: relative;
+    flex: none;
+    padding: 14px 44px 14px 18px;
+  }
+
+  /* 접혔을 때는 헤더 아래쪽이 화면 맨 아래에 닿으므로 홈 인디케이터를 피한다. */
+  body:not(.panel-open) .panel > header {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* 헤더 전체가 시트 손잡이가 된다. */
+  .panel-toggle {
+    position: absolute;
+    display: block;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border-radius: 20px 20px 0 0;
+    background: none;
+    touch-action: none;
+  }
+
+  .panel-grabber {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(151, 255, 220, 0.34);
+    transform: translateX(-50%);
+  }
+
+  .panel-toggle::after {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    width: 9px;
+    height: 9px;
+    border: solid #68f4c4;
+    border-width: 0 1.5px 1.5px 0;
+    content: "";
+    transform: translateY(-70%) rotate(-135deg);
+    transition: transform 240ms ease;
+  }
+
+  body.panel-open .panel-toggle::after {
+    transform: translateY(-20%) rotate(45deg);
+  }
+
+  .panel-body {
+    flex: 1;
+    min-height: 0;
+    padding: 0 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .panel header p {
+    display: none;
+  }
+
+  h1 {
+    /* 접힌 시트의 손잡이 역할이라 제목 줄바꿈을 풀고 한 단계 줄인다. */
+    margin: 7px 0 0;
+    font-size: 18px;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+  }
+  h1 br {
+    display: none;
+  }
+
+  .controls {
+    margin: 18px 0;
+  }
+  .performance-controls {
+    grid-template-columns: 1fr;
+  }
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* 각도 슬라이더는 시트 안으로 옮겨오고 떠 있는 카드 스타일을 벗긴다. */
+  .camera-tools {
+    display: none;
+  }
+  .camera-angle-slot .camera-angle-panel {
+    margin-top: 0;
+    border-color: #20352f;
+    background: rgba(13, 29, 26, 0.55);
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  #streaming-status {
+    right: 12px;
+    bottom: calc(var(--sheet-peek, 92px) + 10px);
+  }
+}
+
+/* 터치 기기에서는 슬라이더와 셀렉트를 손가락으로 누를 수 있는 크기로 키운다. */
+@media (pointer: coarse) {
+  input[type="range"] {
+    height: 26px;
+  }
+  .controls select {
+    min-height: 42px;
+    padding: 10px;
+  }
+  input[type="url"],
+  button {
+    min-height: 44px;
+  }
+  .performance-settings summary {
+    padding: 13px 12px;
+  }
+  .toggle {
+    min-height: 40px;
+  }
+  .toggle input {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* 시트 전환은 위 미디어 쿼리에서 정의되므로 무효화도 파일 끝에 둔다. */
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel-scrim,
+  .panel-toggle::after {
+    transition: none;
   }
 }

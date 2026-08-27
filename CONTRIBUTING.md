@@ -17,7 +17,8 @@ and focused code contributions are all welcome.
 
 Requirements:
 
-- Node.js 20 or newer
+- Node.js 20 or newer. `.nvmrc` pins the version CI uses, so `nvm use` gives you the
+  same results CI reports.
 - npm 10 or newer
 
 ```sh

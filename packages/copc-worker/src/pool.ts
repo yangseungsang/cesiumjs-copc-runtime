@@ -7,6 +7,13 @@ import type {
 } from "cesiumjs-copc-core";
 import type { DecoderWorkerRequest, DecoderWorkerResponse, WorkerStatistics } from "./protocol.js";
 
+/**
+ * The subset of `Worker` this pool depends on.
+ *
+ * Depending on the interface rather than the global class keeps the pool testable in
+ * Node, where `Worker` does not exist, and lets an embedder supply its own worker
+ * implementation through {@link CopcDecodeWorkerPoolOptions.workerFactory}.
+ */
 export interface WorkerLike {
   onmessage: ((event: MessageEvent<DecoderWorkerResponse>) => void) | null;
   onerror: ((event: ErrorEvent) => void) | null;
@@ -14,12 +21,17 @@ export interface WorkerLike {
   terminate(): void;
 }
 
+/** Creates one worker. Called once per pool slot during {@link CopcDecodeWorkerPool.create}. */
 export type DecoderWorkerFactory = () => WorkerLike;
 
 export interface CopcDecodeWorkerPoolOptions {
+  /** Header-derived decoding metadata, broadcast to every worker at startup. */
   readonly metadata: CopcDecodingMetadata;
+  /** Omit when the source needs no projection. Decoded nodes then carry no `cartesian`. */
   readonly cartesianTransform?: CartesianTransformDefinition;
+  /** Defaults to one fewer than the reported core count, clamped to 1 through 4. */
   readonly workerCount?: number;
+  /** Override for tests or for bundlers that resolve the worker URL differently. */
   readonly workerFactory?: DecoderWorkerFactory;
 }
 
@@ -164,6 +176,17 @@ class WorkerClient {
   }
 }
 
+/**
+ * Fixed-size pool of decoder workers.
+ *
+ * Work is dispatched to whichever worker currently has the fewest jobs in flight
+ * rather than by round-robin, because node decode time varies by more than an order
+ * of magnitude with point count and dimension selection. Round-robin would keep
+ * queueing work behind a worker that drew a large node.
+ *
+ * The pool is created through {@link CopcDecodeWorkerPool.create} so that every
+ * worker is initialized before any caller can submit a decode.
+ */
 export class CopcDecodeWorkerPool {
   readonly #workers: WorkerClient[];
   #decodedNodes = 0;
@@ -174,6 +197,13 @@ export class CopcDecodeWorkerPool {
     this.#workers = workers;
   }
 
+  /**
+   * Spawns the workers and initializes all of them before resolving.
+   *
+   * If any worker fails to initialize the whole pool is destroyed and the error is
+   * rethrown, so a caller never receives a pool where some workers would reject every
+   * decode.
+   */
   static async create(options: CopcDecodeWorkerPoolOptions): Promise<CopcDecodeWorkerPool> {
     const count = options.workerCount ?? defaultWorkerCount();
     if (!Number.isInteger(count) || count < 1) throw new RangeError("workerCount must be positive");
@@ -191,6 +221,15 @@ export class CopcDecodeWorkerPool {
     }
   }
 
+  /**
+   * Decodes one compressed node on the least busy worker.
+   *
+   * The caller loses ownership of `node.bytes`: its buffer is transferred to the
+   * worker and must not be read afterwards. Aborting through `signal` rejects with
+   * the signal reason and tells the worker to stop, but a decode that has already
+   * finished still posts its result back to the pool, which drops it. Cancellation is
+   * therefore best effort.
+   */
   async decodeNode(
     node: CompressedPointCloudNode,
     dimensions: readonly string[],
@@ -206,6 +245,13 @@ export class CopcDecodeWorkerPool {
     return result.node;
   }
 
+  /**
+   * Applies a point filter off the main thread and returns a compacted node.
+   *
+   * Unlike {@link decodeNode} the input is copied rather than transferred, so the
+   * caller keeps its node. That copy is the price of being able to re-filter the same
+   * decoded node when the filter changes.
+   */
   async filterNode(
     node: PointCloudNode,
     filter: PointCloudNodeFilter | undefined,
@@ -218,10 +264,12 @@ export class CopcDecodeWorkerPool {
     return worker.filterNode(node, filter, signal);
   }
 
+  /** Totals accumulated across every worker since the pool was created. */
   get statistics(): WorkerStatistics {
     return { decodedNodes: this.#decodedNodes, decodeMilliseconds: this.#decodeMilliseconds };
   }
 
+  /** Terminates every worker and rejects all in-flight work. Safe to call twice. */
   destroy(): void {
     if (this.#destroyed) return;
     this.#destroyed = true;
@@ -235,6 +283,13 @@ function defaultWorkerFactory(): WorkerLike {
   return new Worker(new URL("./decoder-worker.js", import.meta.url), { type: "module" });
 }
 
+/**
+ * Leaves one core for the main thread so decoding never starves rendering, and caps
+ * at four so a many-core machine does not spend resident memory on workers the
+ * request queue will rarely saturate. Assumes two cores when `navigator` is absent,
+ * which is the Node test environment. Override with `workerCount` when profiling
+ * shows a different shape.
+ */
 function defaultWorkerCount(): number {
   const cores = typeof navigator === "undefined" ? 2 : navigator.hardwareConcurrency;
   return Math.max(1, Math.min(4, cores - 1));
