@@ -249,7 +249,7 @@ flowchart LR
 | Unit Test            |                              19개 파일, 120개 테스트 |
 | 런타임 커버리지      | statements 92.85%, branches 78.49%, functions 89.22% |
 | CI 런타임            |                                       Node.js 20, 22 |
-| 브라우저 검증        |                            Chromium E2E 시나리오 8개 |
+| 브라우저 검증        |                           Chromium E2E 시나리오 10개 |
 | 기준 데이터          |                         10,653,336 points / 77.4 MiB |
 | 기준 View 전송량     |                                           약 3.0 MiB |
 | 디코딩한 포인트      |                        octree node 8개에서 269,241개 |
@@ -274,7 +274,7 @@ npm run test:e2e
 
 ## 프로젝트 상태
 
-동작하는 `0.1.1` 릴리스입니다. 알려진 한계는 다음과 같습니다.
+동작하는 `0.1.2` 릴리스입니다. 알려진 한계는 다음과 같습니다.
 
 - Cesium의 buffer point API가 아직 실험 단계입니다
 - 색상과 필터 갱신이 런타임에 CPU에서 처리됩니다

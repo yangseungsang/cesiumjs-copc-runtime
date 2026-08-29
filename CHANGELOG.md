@@ -5,12 +5,28 @@ semantic versioning once public packages are released.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-29
+
 ### Added
 
 - Open-source contribution, support, governance, and security policies.
 - Structured issue and pull-request templates.
 - Third-party software notices and license files in the production demo output.
 - Autzen Stadium CC BY 4.0 attribution and explicit contribution licensing terms.
+- Third-party notices in every public npm package, with the upstream laz-perf
+  Apache-2.0 `COPYING` file preserved in `cesiumjs-copc-core`.
+- An offline packaging guard that verifies notice consistency, package version
+  alignment, internal dependency versions, and the exact laz-perf license copy.
+
+### Changed
+
+- Aligned all five public npm packages and their internal dependencies at `0.1.2`.
+
+### Deprecated
+
+- `cesiumjs-copc@0.1.0` on npm because it installs CesiumJS as a runtime dependency;
+  use `0.1.2` instead. The component packages at `0.1.0` and the corrected main
+  package at `0.1.1` remain supported upgrade sources.
 
 ## [0.1.1] - 2026-08-27
 

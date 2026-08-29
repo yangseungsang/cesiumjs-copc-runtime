@@ -1,6 +1,6 @@
 {
   "name": "cesiumjs-copc-workspace",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "license": "MIT",
   "description": "Cloud-native COPC streaming and analysis for CesiumJS",
@@ -32,7 +32,7 @@
     "pack:check": "npm pack --dry-run --workspace cesiumjs-copc --workspace cesiumjs-copc-core --workspace cesiumjs-copc-runtime --workspace cesiumjs-copc-worker --workspace cesiumjs-copc-analysis",
     "release:check": "npm run lint && npm run format:check && npm test && npm run test:coverage && npm run typecheck && npm run build && npm run demo:build && npm run check:packaging && npm run pack:check",
     "typecheck": "tsc -b --pretty false",
-    "check:packaging": "node scripts/check-peer-dependencies.mjs"
+    "check:packaging": "node scripts/check-peer-dependencies.mjs && node scripts/check-package-notices.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

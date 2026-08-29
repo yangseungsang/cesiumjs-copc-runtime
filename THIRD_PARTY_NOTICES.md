@@ -27,9 +27,11 @@ and CesiumJS assets.
 
 The npm packages in this monorepo declare these components as external dependencies;
 npm therefore installs each dependency with its own package metadata and license file.
-The demo is different because Vite bundles application dependencies, so its build
-copies the license files explicitly. Consult `package-lock.json` for the complete
-resolved dependency graph, including development-only tooling.
+Starting with release 0.1.2, every public package also carries an npm-specific
+`THIRD_PARTY_NOTICES.md`, and `cesiumjs-copc-core` preserves laz-perf's exact upstream
+`COPYING` file. The demo is different because Vite bundles application dependencies,
+so its build copies the license files explicitly. Consult `package-lock.json` for the
+complete resolved dependency graph, including development-only tooling.
 
 ## Autzen Stadium sample data
 

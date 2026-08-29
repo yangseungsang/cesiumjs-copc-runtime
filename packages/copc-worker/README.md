@@ -9,4 +9,5 @@ preservation, CRS transformation, and node-relative ECEF render coordinates.
 Most CesiumJS users should install the main `cesiumjs-copc` package. Bundler and WASM
 requirements are documented in the project troubleshooting guide.
 
-MIT licensed.
+Original project code is MIT licensed. See the bundled
+[third-party notices](THIRD_PARTY_NOTICES.md).

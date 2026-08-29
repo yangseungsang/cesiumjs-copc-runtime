@@ -252,7 +252,7 @@ they can evolve independently. See [Architecture](docs/architecture.md) and
 | Automated unit tests                     |                            120 tests across 19 files |
 | Runtime coverage                         | 92.85% statements, 78.49% branches, 89.22% functions |
 | Supported CI runtimes                    |                                    Node.js 20 and 22 |
-| Browser verification                     |                      8 Chromium end-to-end scenarios |
+| Browser verification                     |                     10 Chromium end-to-end scenarios |
 | Reference COPC                           |                         10,653,336 points / 77.4 MiB |
 | Bytes transferred for the benchmark view |                                        about 3.0 MiB |
 | Points decoded                           |                        269,241 across 8 octree nodes |
@@ -278,7 +278,7 @@ npm run test:e2e
 
 ## Project status
 
-A working `0.1.1` release. Known limitations:
+A working `0.1.2` release. Known limitations:
 
 - Cesium's buffer point API is still experimental
 - colour and filter updates are applied CPU-side at runtime

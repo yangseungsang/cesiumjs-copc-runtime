@@ -7,7 +7,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "cesiumjs-copc-core": "0.1.0"
+    "cesiumjs-copc-core": "0.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.17.2"

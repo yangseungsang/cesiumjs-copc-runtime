@@ -9,4 +9,5 @@ request queues, device-tier defaults, point budgets, and a byte-sized LRU cache.
 Most CesiumJS users should install the main `cesiumjs-copc` package. Use this package
 directly when building another COPC rendering integration.
 
-MIT licensed.
+Original project code is MIT licensed. See the bundled
+[third-party notices](THIRD_PARTY_NOTICES.md).

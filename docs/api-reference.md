@@ -40,6 +40,6 @@ declarations shipped with each package remain the source of truth.
 
 ## Stability
 
-The project is currently `0.1.0`. Public APIs may change before `1.0.0`, but changes
+The project is currently `0.1.2`. Public APIs may change before `1.0.0`, but changes
 should be documented in the changelog and release notes. Cesium's buffer point API is
 experimental and may require compatibility updates across CesiumJS versions.

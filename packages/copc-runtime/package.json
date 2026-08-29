@@ -1,6 +1,6 @@
 {
   "name": "cesiumjs-copc-runtime",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Camera-driven COPC LOD, request scheduling, budgets, and caches",
   "keywords": [
     "cesiumjs",
@@ -34,6 +34,7 @@
   },
   "files": [
     "dist",
+    "THIRD_PARTY_NOTICES.md",
     "!dist/**/*.test.*",
     "!dist/.tsbuildinfo"
   ],
@@ -41,6 +42,6 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "cesiumjs-copc-core": "0.1.0"
+    "cesiumjs-copc-core": "0.1.2"
   }
 }
