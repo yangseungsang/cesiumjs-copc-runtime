@@ -70,5 +70,11 @@ merge.
 5. Create a signed or annotated Git tag and GitHub Release.
 6. Verify installation in a clean consumer project.
 
+To mark an exact published version as unsupported, run the `npm package maintenance`
+workflow manually. Select one of the five public packages, enter a stable semantic
+version and a user-facing reason. The workflow uses the protected `release`
+environment and verifies that the package version exists before deprecating it; it
+does not unpublish the package or change the `latest` tag.
+
 See [CONTRIBUTING.md](../CONTRIBUTING.md), [GOVERNANCE.md](../GOVERNANCE.md), and
 [SECURITY.md](../SECURITY.md).
