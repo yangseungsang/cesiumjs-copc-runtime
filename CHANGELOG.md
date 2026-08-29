@@ -5,6 +5,11 @@ semantic versioning once public packages are released.
 
 ## [Unreleased]
 
+### Added
+
+- An environment-protected manual workflow for deprecating an exact public npm
+  package version without exposing the registry token.
+
 ## [0.1.2] - 2026-08-29
 
 ### Added
