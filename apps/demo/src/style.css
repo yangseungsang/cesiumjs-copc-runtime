@@ -513,6 +513,26 @@ body.space-camera #cesium canvas {
     monospace;
   text-overflow: ellipsis;
 }
+.legal-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 5px;
+  margin-top: 14px;
+  border-top: 1px solid #20352f;
+  padding-top: 11px;
+  color: #708981;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.legal-notice a {
+  color: #8eb7aa;
+  text-decoration-color: #45695e;
+  text-underline-offset: 2px;
+}
+.legal-notice a:hover,
+.legal-notice a:focus-visible {
+  color: #b6d8cd;
+}
 
 @media (max-height: 820px) and (min-width: 641px) and (min-height: 521px) {
   .panel {

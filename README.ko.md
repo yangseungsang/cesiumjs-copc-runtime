@@ -27,6 +27,14 @@
   </em>
 </p>
 
+> **샘플 데이터 출처.** Autzen Stadium 항공 LiDAR는 Watershed Sciences, Inc.가
+> 2010년에 수집했고 Hobu, Inc.의 Max Sampson이 2021년에 분류했습니다.
+> [pointcloud.org](https://pointcloud.org/datasets/autzen/)에서
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 조건으로 제공합니다.
+> 이 저장소의 스크린샷은 프로젝트가 생성한 렌더링이며, 카메라 위치·크롭·런타임
+> 색상 매핑·분류 필터·뷰어 오버레이는 데모와 문서를 위해 변경한 부분입니다.
+> 자세한 내용은 [제3자 고지](THIRD_PARTY_NOTICES.md)를 참고하세요.
+
 > 이 프로젝트는 독립 오픈소스 프로젝트이며 Cesium의 공식 프로젝트가 아닙니다.
 
 ## 왜 필요한가
@@ -282,4 +290,6 @@ Pull Request를 열기 전에 [CONTRIBUTING.md](CONTRIBUTING.md)를 읽어 주�
 기능, 성능 제보는 준비된 이슈 양식을 사용하면 됩니다. 보안 취약점으로 의심되는
 내용은 [SECURITY.md](SECURITY.md)에 따라 비공개로 제보해야 합니다.
 
-[MIT License](LICENSE)로 배포됩니다.
+프로젝트가 작성한 원본 코드는 [MIT License](LICENSE)로 배포됩니다. 제3자 구성요소와
+샘플 데이터에는 각각의 조건이 유지되며, 자세한 내용은
+[제3자 고지](THIRD_PARTY_NOTICES.md)를 참고하세요.
