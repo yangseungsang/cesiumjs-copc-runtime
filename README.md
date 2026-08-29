@@ -27,6 +27,14 @@ no preprocessing step, no second copy of your data.
   </em>
 </p>
 
+> **Sample data attribution.** The Autzen Stadium airborne LiDAR was collected by
+> Watershed Sciences, Inc. (2010) and classified by Max Sampson of Hobu, Inc. (2021).
+> It is available from [pointcloud.org](https://pointcloud.org/datasets/autzen/) under
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). These screenshots are
+> project-generated renderings; camera placement, cropping, runtime color mapping,
+> classification filtering, and viewer overlays are changes made for the demo and
+> documentation. See [Third-party notices](THIRD_PARTY_NOTICES.md).
+
 > This is an independent open-source project and is not an official Cesium project.
 
 ## Why
@@ -287,4 +295,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, and use t
 structured issue forms for bugs, features, and performance reports. Suspected
 vulnerabilities must be reported privately per [SECURITY.md](SECURITY.md).
 
-Released under the [MIT License](LICENSE).
+Original project code is released under the [MIT License](LICENSE). Third-party
+components and sample data retain their own terms; see
+[Third-party notices](THIRD_PARTY_NOTICES.md).

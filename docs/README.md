@@ -32,3 +32,4 @@ before changing it.
 | [Development](development.md)                  | Setting up the workspace and running the quality gates             |
 | [Roadmap](roadmap.md)                          | Checking what is planned before opening a feature request          |
 | [Contributing](../CONTRIBUTING.md)             | Preparing your first pull request                                  |
+| [Third-party notices](../THIRD_PARTY_NOTICES.md) | Reviewing bundled software and sample-data license terms          |

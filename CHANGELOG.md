@@ -9,6 +9,8 @@ semantic versioning once public packages are released.
 
 - Open-source contribution, support, governance, and security policies.
 - Structured issue and pull-request templates.
+- Third-party software notices and license files in the production demo output.
+- Autzen Stadium CC BY 4.0 attribution and explicit contribution licensing terms.
 
 ## [0.1.1] - 2026-08-27
 

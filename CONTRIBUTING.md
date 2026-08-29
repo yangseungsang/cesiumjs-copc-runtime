@@ -13,6 +13,17 @@ and focused code contributions are all welcome.
 - Follow the [Code of Conduct](CODE_OF_CONDUCT.md) and report security issues through
   the process in [SECURITY.md](SECURITY.md).
 
+## Licensing contributions
+
+By submitting a contribution for inclusion in this project, you agree that it is
+licensed under the project's [MIT License](LICENSE). Submit only material that you
+have the right to license on those terms.
+
+Third-party code, data, documentation, or other assets must identify their source and
+license and must preserve all required notices. Do not copy material into the
+repository merely because it is publicly accessible. If the license or your authority
+to contribute the material is unclear, open an issue before submitting it.
+
 ## Local development
 
 Requirements:
