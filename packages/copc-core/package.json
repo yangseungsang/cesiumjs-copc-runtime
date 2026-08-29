@@ -1,6 +1,6 @@
 {
   "name": "cesiumjs-copc-core",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "COPC hierarchy, byte-range loading, caches, and decoded point types",
   "keywords": [
     "copc",
@@ -34,6 +34,8 @@
   },
   "files": [
     "dist",
+    "THIRD_PARTY_NOTICES.md",
+    "third_party",
     "!dist/**/*.test.*",
     "!dist/.tsbuildinfo"
   ],

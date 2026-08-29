@@ -1,6 +1,6 @@
 {
   "name": "cesiumjs-copc",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stream and render COPC point clouds directly in CesiumJS",
   "keywords": [
     "cesiumjs",
@@ -35,6 +35,7 @@
   },
   "files": [
     "dist",
+    "THIRD_PARTY_NOTICES.md",
     "!dist/**/*.test.*",
     "!dist/.tsbuildinfo"
   ],
@@ -42,9 +43,9 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "cesiumjs-copc-core": "0.1.0",
-    "cesiumjs-copc-runtime": "0.1.0",
-    "cesiumjs-copc-worker": "0.1.0",
+    "cesiumjs-copc-core": "0.1.2",
+    "cesiumjs-copc-runtime": "0.1.2",
+    "cesiumjs-copc-worker": "0.1.2",
     "egm96-universal": "^1.1.1",
     "proj4": "^2.19.10"
   },

@@ -12,4 +12,5 @@ import { computeStatistics, queryBounds } from "cesiumjs-copc-analysis";
 const statistics = await computeStatistics(queryBounds(source, bounds));
 ```
 
-MIT licensed.
+Original project code is MIT licensed. See the bundled
+[third-party notices](THIRD_PARTY_NOTICES.md).
